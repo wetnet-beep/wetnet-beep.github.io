@@ -1,4 +1,4 @@
-// equation-solver.js - улучшенный решатель уравнений с поддержкой нескольких переменных
+// equation-solver.js - исправленный решатель уравнений
 
 function solveMathEquation(equation) {
     let steps = [];
@@ -13,14 +13,7 @@ function solveMathEquation(equation) {
         throw new Error('Уравнение не содержит переменных');
     }
     
-    if (variables.length > 1) {
-        return solveMultiVariableEquation(eq, variables, steps);
-    } else {
-        return solveSingleVariableEquation(eq, variables[0], steps);
-    }
-}
-
-function solveSingleVariableEquation(eq, variable, steps) {
+    const variable = variables[0];
     let [left, right] = eq.split('=');
     
     // ВЫЧИСЛЯЕМ ПРАВУЮ ЧАСТЬ
@@ -33,7 +26,36 @@ function solveSingleVariableEquation(eq, variable, steps) {
     steps.push(`<strong>3. Вычисляем постоянную часть слева:</strong> ${leftWithoutVar} = ${constantValue}`);
     
     // НАХОДИМ КОЭФФИЦИЕНТ ПРИ ПЕРЕМЕННОЙ
-    let varCoefficient = getVariableCoefficient(left, variable);
+    let varCoefficient = 0;
+    
+    // Ищем все вхождения переменной
+    let varTerms = left.match(new RegExp(`([-+]?[\\d.]*)${variable}`, 'gi')) || [];
+    
+    for (let term of varTerms) {
+        let coeff = term.replace(new RegExp(variable, 'gi'), '');
+        if (coeff === '' || coeff === '+') {
+            varCoefficient += 1;
+        } else if (coeff === '-') {
+            varCoefficient -= 1;
+        } else {
+            varCoefficient += parseFloat(coeff);
+        }
+    }
+    
+    // Если переменная не найдена в левой части, ищем в правой
+    if (varCoefficient === 0) {
+        let rightVarTerms = right.match(new RegExp(`([-+]?[\\d.]*)${variable}`, 'gi')) || [];
+        for (let term of rightVarTerms) {
+            let coeff = term.replace(new RegExp(variable, 'gi'), '');
+            if (coeff === '' || coeff === '+') {
+                varCoefficient -= 1;
+            } else if (coeff === '-') {
+                varCoefficient += 1;
+            } else {
+                varCoefficient -= parseFloat(coeff);
+            }
+        }
+    }
     
     steps.push(`<strong>4. Находим коэффициент при ${variable}:</strong> ${varCoefficient}`);
     
@@ -51,75 +73,20 @@ function solveSingleVariableEquation(eq, variable, steps) {
     let varValue = (rightValue - constantValue) / varCoefficient;
     
     steps.push(`<strong>5. Решаем уравнение:</strong>`);
-    steps.push(`&nbsp;&nbsp;${varCoefficient}${variable} + ${constantValue} = ${rightValue}`);
-    steps.push(`&nbsp;&nbsp;${varCoefficient}${variable} = ${rightValue} - ${constantValue}`);
-    steps.push(`&nbsp;&nbsp;${varCoefficient}${variable} = ${rightValue - constantValue}`);
+    steps.push(`&nbsp;&nbsp;${formatTerm(varCoefficient, variable)} + ${constantValue} = ${rightValue}`);
+    steps.push(`&nbsp;&nbsp;${formatTerm(varCoefficient, variable)} = ${rightValue} - ${constantValue}`);
+    steps.push(`&nbsp;&nbsp;${formatTerm(varCoefficient, variable)} = ${rightValue - constantValue}`);
     steps.push(`&nbsp;&nbsp;${variable} = ${rightValue - constantValue} / ${varCoefficient}`);
     steps.push(`<strong>6. Ответ:</strong> ${variable} = ${varValue}`);
     
     return { steps, solution: varValue };
 }
 
-function solveMultiVariableEquation(eq, variables, steps) {
-    steps.push(`<strong>2. Обнаружено несколько переменных:</strong> ${variables.join(', ')}`);
-    steps.push(`<strong>3. Система уравнений с несколькими переменными:</strong>`);
-    
-    // Для нескольких переменных предлагаем упростить уравнение
-    let [left, right] = eq.split('=');
-    
-    // Пытаемся выразить одну переменную через другие
-    const mainVariable = variables[0];
-    steps.push(`&nbsp;&nbsp;Пытаемся выразить ${mainVariable} через другие переменные`);
-    
-    // Переносим все в одну сторону
-    let expression = `(${left}) - (${right})`;
-    let simplified = eval(expression.replace(new RegExp(mainVariable, 'gi'), '0'));
-    
-    // Находим коэффициент при главной переменной
-    let mainCoeff = getVariableCoefficient(left, mainVariable) - getVariableCoefficient(right, mainVariable);
-    
-    if (mainCoeff === 0) {
-        steps.push(`<strong>4. Результат:</strong> Уравнение не содержит ${mainVariable}`);
-        steps.push(`<strong>5. Упрощенное уравнение:</strong> ${expression} = 0`);
-        steps.push(`<strong>6. Ответ:</strong> ${mainVariable} может быть любым, если другие переменные удовлетворяют уравнению`);
-        return { steps, solution: `${mainVariable} ∈ ℝ` };
-    }
-    
-    // Выражаем главную переменную
-    let otherVars = variables.filter(v => v !== mainVariable);
-    let constantPart = simplified;
-    
-    steps.push(`<strong>4. Выражаем ${mainVariable}:</strong>`);
-    steps.push(`&nbsp;&nbsp;${mainCoeff}${mainVariable} + ${constantPart} = 0`);
-    steps.push(`&nbsp;&nbsp;${mainCoeff}${mainVariable} = ${-constantPart}`);
-    steps.push(`&nbsp;&nbsp;${mainVariable} = ${-constantPart} / ${mainCoeff}`);
-    
-    let solution = `${mainVariable} = ${-constantPart / mainCoeff}`;
-    if (otherVars.length > 0) {
-        solution += ` (где ${otherVars.join(', ')} - свободные переменные)`;
-    }
-    
-    steps.push(`<strong>5. Ответ:</strong> ${solution}`);
-    
-    return { steps, solution: solution };
-}
-
-function getVariableCoefficient(expression, variable) {
-    let coefficient = 0;
-    let varTerms = expression.match(new RegExp(`([-+]?[\\d.]*)${variable}`, 'gi')) || [];
-    
-    for (let term of varTerms) {
-        let coeff = term.replace(new RegExp(variable, 'gi'), '');
-        if (coeff === '' || coeff === '+') {
-            coefficient += 1;
-        } else if (coeff === '-') {
-            coefficient -= 1;
-        } else {
-            coefficient += parseFloat(coeff);
-        }
-    }
-    
-    return coefficient;
+// Вспомогательная функция для форматирования термина
+function formatTerm(coefficient, variable) {
+    if (coefficient === 1) return variable;
+    if (coefficient === -1) return `-${variable}`;
+    return `${coefficient}${variable}`;
 }
 
 // Проверяем, что функция определена для оффлайн работы
