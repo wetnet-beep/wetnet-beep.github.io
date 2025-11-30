@@ -466,3 +466,57 @@ if (typeof solveEquation === 'undefined') {
 if (typeof solveMathOperation === 'undefined') {
     window.solveMathOperation = solveMathOperation;
         }
+// Функция для отображения информации о ключе
+function showKeyInfoSection() {
+    const userKey = localStorage.getItem('userKey');
+    const keyActivationTime = localStorage.getItem('keyActivationTime');
+    
+    if (!userKey || !keyActivationTime) {
+        return;
+    }
+    
+    const activationTime = new Date(parseInt(keyActivationTime));
+    const expiryTime = new Date(activationTime.getTime() + (10 * 24 * 60 * 60 * 1000));
+    const daysLeft = Math.ceil((expiryTime - new Date()) / (1000 * 60 * 60 * 24));
+    const totalDays = 10;
+    const progress = (daysLeft / totalDays) * 100;
+    
+    // Обновляем информацию
+    document.getElementById('currentKey').textContent = userKey;
+    document.getElementById('activationDate').textContent = activationTime.toLocaleDateString();
+    document.getElementById('expiryDate').textContent = expiryTime.toLocaleDateString();
+    document.getElementById('daysLeft').textContent = daysLeft;
+    
+    // Обновляем прогресс-бар
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    
+    progressFill.style.width = `${progress}%`;
+    progressFill.style.backgroundColor = 
+        daysLeft > 7 ? '#38a169' : 
+        daysLeft > 3 ? '#ed8936' : '#e53e3e';
+    
+    progressText.textContent = `${daysLeft} из ${totalDays} дней`;
+    
+    // Показываем секцию
+    showSection('keyInfo');
+}
+
+// Обновляем функцию showSection чтобы она вызывала showKeyInfoSection при переходе на вкладку "Мой ключ"
+function showSection(sectionName) {
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    document.getElementById(sectionName).classList.add('active');
+    event.target.classList.add('active');
+    
+    // Если перешли на вкладку "Мой ключ", обновляем информацию
+    if (sectionName === 'keyInfo') {
+        showKeyInfoSection();
+    }
+}
