@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Учеба на 5+ | Твой личный помощник</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        // Регистрация Service Worker для оффлайн работы
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(function(registration) {
+                    console.log('Service Worker зарегистрирован:', registration);
+                })
+                .catch(function(error) {
+                    console.log('Ошибка регистрации Service Worker:', error);
+                });
+        }
+    </script>
+</head>
+<body>
+    <!-- Экран ввода ключа -->
+    <div id="keyScreen" class="screen active">
+        <div class="background-animation"></div>
+        <div class="container">
+            <div class="logo">
+                <h1>🎓 УчебаНа5+</h1>
+            </div>
+            
+            <div class="promo-card">
+                <div class="promo-header">
+                    <h2>Хочешь повысить успеваемость?</h2>
+                    <div class="badge">НОВЫМ ПОЛЬЗОВАТЕЛЯМ 1 КЛЮЧ БЕСПЛАТНО</div>
+                </div>
+                
+                <div class="features">
+                    <div class="feature">
+                        <span>✅</span> Решатель уравнений
+                    </div>
+                    <div class="feature">
+                        <span>✅</span> Электронный дневник
+                    </div>
+                    <div class="feature">
+                        <span>✅</span> 5-бальная и 10-бальная системы
+                    </div>
+                    <div class="feature">
+                        <span>✅</span> Личные памятки
+                    </div>
+                    <div class="feature">
+                        <span>✅</span> Решение столбиком
+                    </div>
+                    <div class="feature coming-soon">
+                        <span>🚀</span> СКОРО: ГДЗ ОФФЛАЙН!
+                    </div>
+                </div>
+
+                <div class="key-input-section">
+                    <input type="text" id="keyInput" placeholder="Введите ключ (формат: SHK-XXXX-XXXX)" class="key-input">
+                    <button onclick="checkKey()" class="activate-btn">АКТИВИРОВАТЬ ДОСТУП</button>
+                    <p id="keyMessage" class="message"></p>
+                </div>
+
+                <div class="contacts">
+                    <p>По вопросам приобретения:</p>
+                    <div class="contact-links">
+                        <a href="https://t.me/west_next" class="tg-link" target="_blank">
+                            📱 Telegram: @west_next
+                        </a>
+                        <a href="https://wa.me/79695356936" class="wa-link" target="_blank">
+                            💬 WhatsApp: +7 (969) 535-69-36
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Главное меню -->
+    <div id="mainMenu" class="screen">
+        <header class="header">
+            <div class="header-content">
+                <h1>🎓 УчебаНа5+</h1>
+                <nav class="nav-menu">
+                    <button onclick="showSection('solver')" class="nav-btn">Решатель</button>
+                    <button onclick="showSection('mathOperations')" class="nav-btn">Столбиком</button>
+                    <button onclick="showSection('diary')" class="nav-btn">Дневник</button>
+                    <button onclick="showSection('notes')" class="nav-btn">Памятки</button>
+                    <button onclick="logout()" class="nav-btn logout">Выйти</button>
+                </nav>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Решатель уравнений -->
+            <div id="solver" class="section active">
+                <div class="section-card">
+                    <h2>🧮 Решатель уравнений</h2>
+                    <p>Решайте любые уравнения моментально!</p>
+                    
+                    <div class="solver-input">
+                        <input type="text" id="equationInput" placeholder="Введите уравнение (например: 2x + 5 = 13)">
+                        <button onclick="solveEquation()">Решить</button>
+                    </div>
+                    
+                    <div id="solutionResult" class="result"></div>
+                </div>
+            </div>
+
+            <!-- Математические операции -->
+            <div id="mathOperations" class="section">
+                <div class="section-card">
+                    <h2>➗ Решение столбиком</h2>
+                    <p>Умножение, деление и деление с остатком</p>
+                    
+                    <div class="math-controls">
+                        <div class="operation-selector">
+                            <select id="operationType">
+                                <option value="multiplication">Умножение</option>
+                                <option value="division">Деление</option>
+                                <option value="divisionWithRemainder">Деление с остатком</option>
+                            </select>
+                        </div>
+                        
+                        <div class="number-inputs">
+                            <input type="number" id="number1" placeholder="Первое число">
+                            <input type="number" id="number2" placeholder="Второе число">
+                            <button onclick="solveMathOperation()">Решить</button>
+                        </div>
+                    </div>
+                    
+                    <div id="mathResult" class="result"></div>
+                </div>
+            </div>
+
+            <!-- Электронный дневник -->
+            <div id="diary" class="section">
+                <div class="section-card">
+                    <h2>📊 Электронный дневник</h2>
+                    
+                    <div class="diary-controls">
+                        <select id="gradingSystem" onchange="changeGradingSystem()">
+                            <option value="5">5-бальная система</option>
+                            <option value="10">10-бальная система</option>
+                        </select>
+                        
+                        <div class="subject-input">
+                            <input type="text" id="subjectName" placeholder="Название предмета">
+                            <input type="number" id="gradeInput" placeholder="Оценка" min="1" max="5">
+                            <button onclick="addGrade()">Добавить</button>
+                        </div>
+                    </div>
+                    
+                    <div id="gradesList" class="grades-list"></div>
+                    <div id="averageGrade" class="average-grade"></div>
+                </div>
+            </div>
+
+            <!-- Памятки -->
+            <div id="notes" class="section">
+                <div class="section-card">
+                    <h2>📝 Личные памятки</h2>
+                    
+                    <div class="notes-input">
+                        <textarea id="noteText" placeholder="Введите вашу памятку..."></textarea>
+                        <button onclick="addNote()">Сохранить</button>
+                    </div>
+                    
+                    <div id="notesList" class="notes-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>🚀 <strong>СКОРО БУДЕТ ГДЗ ОФФЛАЙН!</strong></p>
+            <p>Все функции работают полностью оффлайн</p>
+        </footer>
+    </div>
+
+    <!-- Встроенный скрипт для проверки загрузки -->
+    <script>
+        // Проверяем, что все функции определены
+        function checkFunctions() {
+            const requiredFunctions = [
+                'checkKey', 'showMainMenu', 'logout', 'showSection', 
+                'solveEquation', 'solveMathOperation', 'changeGradingSystem',
+                'addGrade', 'addNote', 'loadDiary', 'loadNotes'
+            ];
+            
+            for (let funcName of requiredFunctions) {
+                if (typeof window[funcName] === 'undefined') {
+                    console.error('Функция не загружена:', funcName);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Пытаемся загрузить скрипты с обработкой ошибок
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // Загружаем все скрипты последовательно
+        async function loadAllScripts() {
+            try {
+                await loadScript('script.js');
+                await loadScript('equation-solver.js');
+                await loadScript('math-operations.js');
+                
+                if (checkFunctions()) {
+                    console.log('Все скрипты загружены успешно');
+                    // Инициализируем приложение
+                    if (typeof initApp === 'function') {
+                        initApp();
+                    }
+                } else {
+                    console.error('Не все функции загружены');
+                    showError('Ошибка загрузки приложения. Проверьте подключение к интернету.');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки скриптов:', error);
+                showError('Ошибка загрузки приложения. Проверьте подключение к интернету.');
+            }
+        }
+
+        function showError(message) {
+            const keyScreen = document.getElementById('keyScreen');
+            const existingError = document.querySelector('.load-error');
+            if (existingError) existingError.remove();
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'load-error';
+            errorDiv.innerHTML = `
+                <div style="background: #fed7d7; color: #c53030; padding: 15px; border-radius: 10px; margin: 20px 0; text-align: center;">
+                    <strong>⚠️ ${message}</strong><br>
+                    <small>Попробуйте перезагрузить страницу при подключении к интернету</small>
+                </div>
+            `;
+            keyScreen.querySelector('.container').insertBefore(errorDiv, keyScreen.querySelector('.promo-card'));
+        }
+
+        // Запускаем загрузку скриптов
+        loadAllScripts();
+    </script>
+</body>
+</html>
