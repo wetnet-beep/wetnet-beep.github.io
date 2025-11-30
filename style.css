@@ -1,0 +1,505 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.screen {
+    display: none;
+    min-height: 100vh;
+}
+
+.screen.active {
+    display: block;
+}
+
+/* Анимированный фон */
+.background-animation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    z-index: -1;
+}
+
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Логотип */
+.logo {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo h1 {
+    color: white;
+    font-size: 2.5em;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Промо-карта */
+.promo-card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
+}
+
+.promo-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.promo-header h2 {
+    color: #4a5568;
+    margin-bottom: 15px;
+    font-size: 1.4em;
+}
+
+.badge {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* Функции */
+.features {
+    margin: 25px 0;
+}
+
+.feature {
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 1.1em;
+}
+
+.feature:last-child {
+    border-bottom: none;
+}
+
+.coming-soon {
+    color: #e53e3e;
+    font-weight: bold;
+}
+
+/* Ввод ключа */
+.key-input-section {
+    margin: 25px 0;
+}
+
+.key-input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1.1em;
+    text-align: center;
+    margin-bottom: 15px;
+    transition: border-color 0.3s;
+}
+
+.key-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.activate-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(45deg, #48bb78, #38a169);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.activate-btn:hover {
+    transform: translateY(-2px);
+}
+
+.message {
+    text-align: center;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* Контакты */
+.contacts {
+    text-align: center;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.tg-link, .wa-link {
+    padding: 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+.tg-link {
+    background: #0088cc;
+}
+
+.wa-link {
+    background: #25d366;
+}
+
+.tg-link:hover, .wa-link:hover {
+    transform: translateY(-2px);
+}
+
+/* Главное меню */
+.header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 15px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-content h1 {
+    color: #4a5568;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 10px;
+}
+
+.nav-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #edf2f7;
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.nav-btn:hover, .nav-btn.active {
+    background: #667eea;
+    color: white;
+}
+
+.nav-btn.logout {
+    background: #fed7d7;
+    color: #c53030;
+}
+
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+}
+
+.section-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.section-card h2 {
+    margin-bottom: 20px;
+    color: #4a5568;
+}
+
+/* Решатель уравнений */
+.solver-input {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.solver-input input {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.solver-input button {
+    padding: 12px 24px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Математические операции */
+.math-controls {
+    margin: 20px 0;
+}
+
+.operation-selector {
+    margin-bottom: 15px;
+}
+
+.operation-selector select {
+    padding: 10px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1em;
+}
+
+.number-inputs {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.number-inputs input {
+    padding: 10px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    flex: 1;
+}
+
+.number-inputs button {
+    padding: 10px 20px;
+    background: #ed8936;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Результаты */
+.result {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    background: #f7fafc;
+}
+
+/* Дневник */
+.diary-controls {
+    margin: 20px 0;
+}
+
+.subject-input {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.subject-input input {
+    padding: 10px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.subject-input button {
+    padding: 10px 20px;
+    background: #48bb78;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.grades-list {
+    margin: 20px 0;
+}
+
+.grade-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.average-grade {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #2d3748;
+}
+
+/* Памятки */
+.notes-input {
+    margin: 20px 0;
+}
+
+.notes-input textarea {
+    width: 100%;
+    height: 100px;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    resize: vertical;
+}
+
+.notes-input button {
+    margin-top: 10px;
+    padding: 12px 24px;
+    background: #ed8936;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.note-item {
+    background: #f7fafc;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+/* Футер */
+.footer {
+    text-align: center;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.95);
+    margin-top: 50px;
+}
+
+.footer p {
+    margin: 5px 0;
+    color: #4a5568;
+}
+
+/* Стили для решения уравнений */
+.solution-steps {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #48bb78;
+}
+
+.solution-steps p {
+    margin: 8px 0;
+    padding: 5px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.solution-steps p:last-child {
+    border-bottom: none;
+    font-weight: bold;
+    color: #2d3748;
+}
+
+/* Стили для математических операций */
+.column-solution {
+    font-family: 'Courier New', monospace;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    margin: 10px 0;
+    line-height: 1.8;
+    white-space: pre-wrap;
+}
+
+.math-steps {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #ed8936;
+}
+
+.math-steps p {
+    margin: 8px 0;
+    padding: 5px;
+}
+
+.success {
+    color: #2d3748;
+}
+
+.error {
+    color: #e53e3e;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .promo-card {
+        padding: 20px;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .nav-menu {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .solver-input, .subject-input, .number-inputs {
+        flex-direction: column;
+    }
+}
