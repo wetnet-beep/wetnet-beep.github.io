@@ -91,8 +91,9 @@ function solveEquation() {
         return;
     }
 
-    if (!equation.includes('x')) {
-        resultDiv.innerHTML = '<div class="error">❌ Введите уравнение с переменной x</div>';
+    // Проверяем, есть ли в уравнении буквы (переменные)
+    if (!equation.match(/[a-z]/i)) {
+        resultDiv.innerHTML = '<div class="error">❌ Введите уравнение с переменной (x, y, t, a, b, c, и т.д.)</div>';
         return;
     }
 
@@ -345,4 +346,4 @@ if (typeof solveEquation === 'undefined') {
 }
 if (typeof solveMathOperation === 'undefined') {
     window.solveMathOperation = solveMathOperation;
-      }
+                                              }
