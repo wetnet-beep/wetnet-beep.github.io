@@ -1,4 +1,4 @@
-// equation-solver.js - исправленный решатель уравнений
+// equation-solver.js - полностью переписанный решатель
 
 function solveMathEquation(equation) {
     let steps = [];
@@ -16,73 +16,180 @@ function solveMathEquation(equation) {
     const variable = variables[0];
     let [left, right] = eq.split('=');
     
-    // ВЫЧИСЛЯЕМ ПРАВУЮ ЧАСТЬ
-    let rightValue = eval(right.replace(new RegExp(variable, 'gi'), '0'));
-    steps.push(`<strong>2. Вычисляем правую часть:</strong> ${right} = ${rightValue}`);
-    
-    // ВЫЧИСЛЯЕМ ЛЕВУЮ ЧАСТЬ БЕЗ ПЕРЕМЕННОЙ (константы)
-    let leftWithoutVar = left.replace(new RegExp(variable, 'gi'), '0');
-    let constantValue = eval(leftWithoutVar);
-    steps.push(`<strong>3. Вычисляем постоянную часть слева:</strong> ${leftWithoutVar} = ${constantValue}`);
-    
-    // НАХОДИМ КОЭФФИЦИЕНТ ПРИ ПЕРЕМЕННОЙ
-    let varCoefficient = 0;
-    
-    // Ищем все вхождения переменной
-    let varTerms = left.match(new RegExp(`([-+]?[\\d.]*)${variable}`, 'gi')) || [];
-    
-    for (let term of varTerms) {
-        let coeff = term.replace(new RegExp(variable, 'gi'), '');
-        if (coeff === '' || coeff === '+') {
-            varCoefficient += 1;
-        } else if (coeff === '-') {
-            varCoefficient -= 1;
-        } else {
-            varCoefficient += parseFloat(coeff);
-        }
+    // ПРОСТАЯ ЛОГИКА ДЛЯ БАЗОВЫХ УРАВНЕНИЙ
+    if (isSimpleEquation(left, right, variable)) {
+        return solveSimpleEquation(left, right, variable, steps);
     }
     
-    // Если переменная не найдена в левой части, ищем в правой
-    if (varCoefficient === 0) {
-        let rightVarTerms = right.match(new RegExp(`([-+]?[\\d.]*)${variable}`, 'gi')) || [];
-        for (let term of rightVarTerms) {
-            let coeff = term.replace(new RegExp(variable, 'gi'), '');
-            if (coeff === '' || coeff === '+') {
-                varCoefficient -= 1;
-            } else if (coeff === '-') {
-                varCoefficient += 1;
-            } else {
-                varCoefficient -= parseFloat(coeff);
-            }
-        }
+    // СЛОЖНАЯ ЛОГИКА ДЛЯ ОСТАЛЬНЫХ СЛУЧАЕВ
+    return solveComplexEquation(left, right, variable, steps);
+}
+
+function isSimpleEquation(left, right, variable) {
+    // Проверяем, что уравнение простое: ax + b = c
+    const simplePattern = new RegExp(`^([-+]?[\\d.]*)${variable}([-+][\\d.]+)?$`, 'i');
+    return simplePattern.test(left) && !isNaN(parseFloat(right));
+}
+
+function solveSimpleEquation(left, right, variable, steps) {
+    let rightValue = parseFloat(right);
+    steps.push(`<strong>2. Правая часть:</strong> ${right}`);
+    
+    // Разбираем левую часть: ax + b
+    let a = 0; // коэффициент при переменной
+    let b = 0; // константа
+    
+    // Ищем переменную в левой части
+    const varMatch = left.match(new RegExp(`([-+]?[\\d.]*)${variable}`, 'i'));
+    if (varMatch) {
+        let coeff = varMatch[1];
+        if (coeff === '' || coeff === '+') a = 1;
+        else if (coeff === '-') a = -1;
+        else a = parseFloat(coeff);
     }
     
-    steps.push(`<strong>4. Находим коэффициент при ${variable}:</strong> ${varCoefficient}`);
+    // Ищем константу в левой части
+    const constMatch = left.replace(new RegExp(variable, 'gi'), '').match(/([-+]?[\d.]+)$/);
+    if (constMatch) {
+        b = parseFloat(constMatch[0]);
+    }
     
-    // РЕШАЕМ УРАВНЕНИЕ
-    if (varCoefficient === 0) {
-        if (constantValue === rightValue) {
-            steps.push(`<strong>5. Решение:</strong> Уравнение верно для любого значения ${variable}`);
+    steps.push(`<strong>3. Анализ левой части:</strong>`);
+    steps.push(`&nbsp;&nbsp;Коэффициент при ${variable}: ${a}`);
+    steps.push(`&nbsp;&nbsp;Константа: ${b}`);
+    
+    if (a === 0) {
+        if (b === rightValue) {
+            steps.push(`<strong>4. Решение:</strong> Уравнение верно для любого ${variable}`);
             return { steps, solution: `${variable} ∈ ℝ` };
         } else {
-            steps.push(`<strong>5. Решение:</strong> Уравнение не имеет решений`);
+            steps.push(`<strong>4. Решение:</strong> Уравнение не имеет решений`);
             return { steps, solution: 'Нет решения' };
         }
     }
     
-    let varValue = (rightValue - constantValue) / varCoefficient;
+    let solution = (rightValue - b) / a;
     
-    steps.push(`<strong>5. Решаем уравнение:</strong>`);
-    steps.push(`&nbsp;&nbsp;${formatTerm(varCoefficient, variable)} + ${constantValue} = ${rightValue}`);
-    steps.push(`&nbsp;&nbsp;${formatTerm(varCoefficient, variable)} = ${rightValue} - ${constantValue}`);
-    steps.push(`&nbsp;&nbsp;${formatTerm(varCoefficient, variable)} = ${rightValue - constantValue}`);
-    steps.push(`&nbsp;&nbsp;${variable} = ${rightValue - constantValue} / ${varCoefficient}`);
-    steps.push(`<strong>6. Ответ:</strong> ${variable} = ${varValue}`);
+    steps.push(`<strong>4. Решаем уравнение:</strong>`);
+    steps.push(`&nbsp;&nbsp;${formatEquation(a, b, variable)} = ${rightValue}`);
+    steps.push(`&nbsp;&nbsp;${formatTerm(a, variable)} = ${rightValue} - ${b}`);
+    steps.push(`&nbsp;&nbsp;${formatTerm(a, variable)} = ${rightValue - b}`);
+    steps.push(`&nbsp;&nbsp;${variable} = ${rightValue - b} / ${a}`);
+    steps.push(`<strong>5. Ответ:</strong> ${variable} = ${solution}`);
     
-    return { steps, solution: varValue };
+    return { steps, solution: solution };
 }
 
-// Вспомогательная функция для форматирования термина
+function solveComplexEquation(left, right, variable, steps) {
+    steps.push(`<strong>2. Сложное уравнение - используем численный метод</strong>`);
+    
+    // Простой численный метод: подставляем значения и находим корень
+    let solution = findRoot(left, right, variable);
+    
+    steps.push(`<strong>3. Найденное решение:</strong> ${variable} = ${solution}`);
+    steps.push(`<strong>4. Проверка:</strong> Подставляем ${solution} в уравнение`);
+    
+    // Проверяем решение
+    let leftValue = calculateExpression(left.replace(new RegExp(variable, 'gi'), solution));
+    let rightValue = calculateExpression(right.replace(new RegExp(variable, 'gi'), solution));
+    
+    steps.push(`&nbsp;&nbsp;Левая часть: ${leftValue}`);
+    steps.push(`&nbsp;&nbsp;Правая часть: ${rightValue}`);
+    steps.push(`&nbsp;&nbsp;Разность: ${Math.abs(leftValue - rightValue)}`);
+    
+    steps.push(`<strong>5. Ответ:</strong> ${variable} ≈ ${solution.toFixed(4)}`);
+    
+    return { steps, solution: solution.toFixed(4) };
+}
+
+function findRoot(left, right, variable) {
+    // Простой метод половинного деления
+    let x = 0;
+    let step = 10;
+    let maxIterations = 100;
+    
+    for (let i = 0; i < maxIterations; i++) {
+        let leftValue = calculateExpression(left.replace(new RegExp(variable, 'gi'), x));
+        let rightValue = calculateExpression(right.replace(new RegExp(variable, 'gi'), x));
+        let diff = leftValue - rightValue;
+        
+        if (Math.abs(diff) < 0.001) {
+            return x;
+        }
+        
+        if (diff > 0) {
+            x -= step;
+        } else {
+            x += step;
+        }
+        
+        step /= 2;
+    }
+    
+    return x;
+}
+
+function calculateExpression(expr) {
+    // Безопасное вычисление выражения
+    try {
+        // Убираем лишние операторы в начале
+        expr = expr.replace(/^[+]/, '');
+        
+        // Заменяем последовательности операторов
+        expr = expr.replace(/--/g, '+');
+        expr = expr.replace(/\+-/g, '-');
+        expr = expr.replace(/-\+/g, '-');
+        
+        // Вычисляем простое выражение
+        return eval(expr);
+    } catch (error) {
+        // Если eval не работает, используем простой парсер
+        return parseSimpleExpression(expr);
+    }
+}
+
+function parseSimpleExpression(expr) {
+    let result = 0;
+    let currentNumber = '';
+    let currentSign = 1;
+    
+    for (let i = 0; i < expr.length; i++) {
+        let char = expr[i];
+        
+        if (char === '+' || char === '-') {
+            if (currentNumber !== '') {
+                result += currentSign * parseFloat(currentNumber);
+                currentNumber = '';
+            }
+            currentSign = char === '+' ? 1 : -1;
+        } else if (!isNaN(char) || char === '.') {
+            currentNumber += char;
+        }
+    }
+    
+    if (currentNumber !== '') {
+        result += currentSign * parseFloat(currentNumber);
+    }
+    
+    return result;
+}
+
+function formatEquation(a, b, variable) {
+    let equation = '';
+    
+    if (a !== 0) {
+        equation += formatTerm(a, variable);
+    }
+    
+    if (b !== 0) {
+        if (b > 0 && equation !== '') equation += ' + ';
+        else if (b < 0) equation += ' - ';
+        equation += Math.abs(b);
+    }
+    
+    return equation || '0';
+}
+
 function formatTerm(coefficient, variable) {
     if (coefficient === 1) return variable;
     if (coefficient === -1) return `-${variable}`;
@@ -92,4 +199,4 @@ function formatTerm(coefficient, variable) {
 // Проверяем, что функция определена для оффлайн работы
 if (typeof solveMathEquation === 'undefined') {
     window.solveMathEquation = solveMathEquation;
-}
+            }
