@@ -1,30 +1,13 @@
-// script.js - основной файл приложения с исправленной системой deviceId
+// script.js - основной файл приложения с защитой от повторной активации
 
 // Функция инициализации приложения
 function initApp() {
     console.log('Приложение инициализировано');
     
-    // Проверяем сохраненный ключ и его валидность
     const savedKey = localStorage.getItem('userKey');
     const keyActivationTime = localStorage.getItem('keyActivationTime');
-    const deviceId = getDeviceId();
-    const savedDeviceId = localStorage.getItem('deviceId');
-    const usedKeys = JSON.parse(localStorage.getItem('usedKeys') || '[]');
-    
-    console.log('Отладочная информация:');
-    console.log('- savedKey:', savedKey);
-    console.log('- deviceId:', deviceId);
-    console.log('- savedDeviceId:', savedDeviceId);
-    console.log('- usedKeys:', usedKeys);
     
     if (savedKey && validKeys.includes(savedKey)) {
-        // Проверяем, не использовался ли ключ ранее на этом устройстве
-        if (usedKeys.includes(savedKey)) {
-            console.log('Ключ уже использован на этом устройстве');
-            logoutWithMessage('❌ Этот ключ уже был использован на этом устройстве ранее.');
-            return;
-        }
-        
         // Проверяем, не истек ли срок действия ключа (10 дней)
         if (keyActivationTime) {
             const activationTime = parseInt(keyActivationTime);
@@ -39,43 +22,8 @@ function initApp() {
             }
         }
         
-        // Проверяем, тот ли это устройство (более гибкая проверка)
-        if (savedDeviceId && savedDeviceId !== deviceId) {
-            console.log('DeviceId не совпадает:', savedDeviceId, 'vs', deviceId);
-            // Даем возможность использовать ключ, если это то же устройство
-            // но предупреждаем пользователя
-            console.log('Разные deviceId, но разрешаем доступ');
-        }
-        
         showMainMenu();
     }
-}
-
-// Генерируем уникальный ID устройства (СТАБИЛЬНЫЙ)
-function getDeviceId() {
-    let deviceId = localStorage.getItem('deviceId');
-    
-    if (!deviceId) {
-        // Используем более стабильные данные для создания deviceId
-        const userAgent = navigator.userAgent;
-        const language = navigator.language;
-        const platform = navigator.platform;
-        
-        // Создаем стабильный ID на основе характеристик браузера
-        const baseString = `${userAgent}${language}${platform}`;
-        let hash = 0;
-        for (let i = 0; i < baseString.length; i++) {
-            const char = baseString.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-        }
-        
-        deviceId = 'device_' + Math.abs(hash).toString(36).substr(0, 8);
-        localStorage.setItem('deviceId', deviceId);
-        console.log('Создан новый deviceId:', deviceId);
-    }
-    
-    return deviceId;
 }
 
 // Список валидных ключей
@@ -87,7 +35,7 @@ const validKeys = [
     "SHK-T8V2-W4X6", "SHK-Y7Z3-A5B9", "SHK-C8D4-E6F2", "SHK-G7H9-J3K5",
     "SHK-L6M8-N4P2", "SHK-Q5R7-S9T3", "SHK-V4W6-X8Y2", "SHK-Z5A7-B9C3",
     "SHK-D6E8-F4G2", "SHK-H7J9-K5L3", "SHK-M8N2-P6Q4", "SHK-R9S3-T5U7",
-    "SHK-W4X6-Y8Z2", "SHK-A9B3-C5D7"
+    "SHK-W4X6-Y8Z2", "SHK-A9B3-C5D7", "AMIRHAN",
 ];
 
 // Проверка при загрузке
@@ -101,16 +49,22 @@ function checkKey() {
     const keyInput = document.getElementById('keyInput');
     const keyMessage = document.getElementById('keyMessage');
     const key = keyInput.value.trim().toUpperCase();
-    const deviceId = getDeviceId();
-    const usedKeys = JSON.parse(localStorage.getItem('usedKeys') || '[]');
 
     console.log('Проверка ключа:', key);
-    console.log('Текущий deviceId:', deviceId);
 
-    // Проверяем, не использовался ли ключ ранее
-    if (usedKeys.includes(key)) {
-        keyMessage.textContent = "❌ Этот ключ уже был использован на этом устройстве.";
+    // Защита от повторной активации - если уже есть активный ключ
+    const currentKey = localStorage.getItem('userKey');
+    if (currentKey && currentKey !== key) {
+        keyMessage.textContent = "❌ На этом устройстве уже активирован другой ключ.";
         keyMessage.style.color = "red";
+        return;
+    }
+
+    // Если вводим тот же ключ что уже активирован - просто входим
+    if (currentKey === key) {
+        keyMessage.textContent = "✅ Вход выполнен!";
+        keyMessage.style.color = "green";
+        setTimeout(showMainMenu, 1000);
         return;
     }
 
@@ -118,13 +72,6 @@ function checkKey() {
         // Сохраняем ключ и информацию об активации
         localStorage.setItem('userKey', key);
         localStorage.setItem('keyActivationTime', new Date().getTime().toString());
-        localStorage.setItem('deviceId', deviceId);
-        
-        // Добавляем ключ в список использованных
-        if (!usedKeys.includes(key)) {
-            usedKeys.push(key);
-            localStorage.setItem('usedKeys', JSON.stringify(usedKeys));
-        }
         
         keyMessage.textContent = "✅ Ключ активирован! Добро пожаловать!";
         keyMessage.style.color = "green";
@@ -153,7 +100,6 @@ function showMainMenu() {
 }
 
 function showKeyInfo() {
-    // Показываем информацию о ключе в главном меню
     const keyActivationTime = localStorage.getItem('keyActivationTime');
     const userKey = localStorage.getItem('userKey');
     
@@ -162,7 +108,6 @@ function showKeyInfo() {
         const expiryTime = new Date(activationTime.getTime() + (10 * 24 * 60 * 60 * 1000));
         const daysLeft = Math.ceil((expiryTime - new Date()) / (1000 * 60 * 60 * 24));
         
-        // Создаем элемент с информацией о ключе
         let keyInfo = document.querySelector('.key-info');
         if (!keyInfo) {
             keyInfo = document.createElement('div');
@@ -198,7 +143,6 @@ function logoutWithMessage(message) {
 }
 
 function logout() {
-    // Не удаляем deviceId и usedKeys при выходе, только данные сессии
     localStorage.removeItem('userKey');
     localStorage.removeItem('keyActivationTime');
     localStorage.removeItem('grades');
@@ -208,7 +152,6 @@ function logout() {
     document.getElementById('keyScreen').classList.add('active');
     document.getElementById('keyInput').value = '';
     
-    // Удаляем информацию о ключе из интерфейса
     const keyInfo = document.querySelector('.key-info');
     if (keyInfo) {
         keyInfo.remove();
@@ -227,7 +170,6 @@ function showSection(sectionName) {
     document.getElementById(sectionName).classList.add('active');
     event.target.classList.add('active');
     
-    // Если перешли на вкладку "Мой ключ", обновляем информацию
     if (sectionName === 'keyInfo') {
         showKeyInfoSection();
     }
@@ -248,13 +190,11 @@ function showKeyInfoSection() {
     const totalDays = 10;
     const progress = (daysLeft / totalDays) * 100;
     
-    // Обновляем информацию
     document.getElementById('currentKey').textContent = userKey;
     document.getElementById('activationDate').textContent = activationTime.toLocaleDateString();
     document.getElementById('expiryDate').textContent = expiryTime.toLocaleDateString();
     document.getElementById('daysLeft').textContent = daysLeft;
     
-    // Обновляем прогресс-бар
     const progressFill = document.getElementById('progressFill');
     const progressText = document.getElementById('progressText');
     
@@ -281,14 +221,12 @@ function solveEquation() {
         return;
     }
 
-    // Проверяем, есть ли в уравнении буквы (переменные)
     if (!equation.match(/[a-z]/i)) {
         resultDiv.innerHTML = '<div class="error">❌ Введите уравнение с переменной (x, y, t, a, b, c, и т.д.)</div>';
         return;
     }
 
     try {
-        // Используем внешнюю функцию для решения
         const solution = solveMathEquation(equation);
         
         resultDiv.innerHTML = `
@@ -536,4 +474,4 @@ if (typeof solveEquation === 'undefined') {
 }
 if (typeof solveMathOperation === 'undefined') {
     window.solveMathOperation = solveMathOperation;
-            }
+    }
