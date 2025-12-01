@@ -610,3 +610,105 @@ body {
 .logout-btn:hover {
     background: #feb2b2;
     }
+/* Стили для сканера OCR */
+.ocr-controls {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+}
+
+#imageInput {
+    padding: 10px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.ocr-btn {
+    padding: 12px 24px;
+    background: #9f7aea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.ocr-btn:hover {
+    background: #805ad5;
+}
+
+.image-preview {
+    margin: 20px 0;
+    text-align: center;
+}
+
+#imagePreview {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    display: none;
+}
+
+.ocr-result-text textarea {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: monospace;
+    margin: 10px 0;
+    resize: vertical;
+}
+
+.ocr-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.ocr-action-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    flex: 1;
+}
+
+.ocr-action-btn:first-child {
+    background: #4299e1;
+    color: white;
+}
+
+.ocr-action-btn:last-child {
+    background: #38a169;
+    color: white;
+}
+
+.ocr-action-btn:hover {
+    opacity: 0.9;
+}
+
+.ocr-help {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f7fafc;
+    border-radius: 8px;
+    border-left: 4px solid #9f7aea;
+}
+
+.ocr-help h4 {
+    margin-bottom: 10px;
+    color: #553c9a;
+}
+
+.ocr-help ul {
+    margin-left: 20px;
+    color: #4a5568;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #4a5568;
+}
